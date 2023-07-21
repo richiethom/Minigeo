@@ -7,18 +7,24 @@ import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.tan;
 
+import lombok.Data;
+
 /**
  * Geographic point, specified by its coordinates.
  * 
  * @author Christophe Jacquet
  *
  */
+@Data
 public class Point {
-	private final double latitude;
-	private final double longitude;
-	private final double easting;
-	private final double northing;
+
+	private static final int N0_NORTH = 0;			// northern hemisphere
+	private static final int N0_SOUTH = 10000;		// southern hemisphere
 	
+	private static final double k0 = .9996;
+	private static final double a=6378.137;				// Earth's radius
+	private static final double e=.0818192;
+
 	// We need to use a single "reference meridian" for all points, for the
 	// projection to be meaningful. We use the first point's longitude for
 	// this. UTM ensures that distortion is below 1/1000 for a 6° longitude
@@ -27,13 +33,11 @@ public class Point {
 	// this zone.
 	private static double lambda0 = Double.NaN;
 	
-	private static final int N0_NORTH = 0;			// northern hemisphere
-	private static final int N0_SOUTH = 10000;		// southern hemisphere
-	
-	private static double k0 = .9996;
-	private static double a=6378.137;				// Earth's radius
-	private static double e=.0818192;
-	
+	private final double latitude;
+	private final double longitude;
+	private final double easting;
+	private final double northing;
+
 	/**
 	 * Creates a new point, given its coordinates according to the WGS84 datum.
 	 * @param latitude
@@ -88,42 +92,6 @@ public class Point {
 		this(a.latitude + fraction * (b.latitude - a.latitude), a.longitude + fraction * (b.longitude - a.longitude));
 	}
 
-	/**
-	 * Returns the latitude of the point.
-	 * 
-	 * @return the latitude
-	 */
-	public double getLatitude() {
-		return latitude;
-	}
-
-	/**
-	 * Returns the longitude of the point.
-	 * 
-	 * @return the longitude
-	 */
-	public double getLongitude() {
-		return longitude;
-	}
-
-	/**
-	 * Returns the easting of the point.
-	 * 
-	 * @return the easting
-	 */
-	double getEasting() {
-		return easting;
-	}
-
-	/**
-	 * Returns the northing of the point.
-	 * 
-	 * @return the northing
-	 */
-	double getNorthing() {
-		return northing;
-	}
-	
 	/**
 	 * Returns the distance between this point and another point, in 
 	 * kilometers.

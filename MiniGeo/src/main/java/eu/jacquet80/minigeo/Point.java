@@ -7,6 +7,11 @@ import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.tan;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import lombok.Data;
 
 /**
@@ -31,6 +36,8 @@ public class Point {
 	// span around lambda0.
 	// Alternatively, we could use an explicit UTM zone and project within
 	// this zone.
+	private static final Lock lock = new ReentrantLock();
+	private static volatile boolean lambdaNeedsSetting = true;
 	private static double lambda0 = Double.NaN;
 	
 	private final double latitude;
@@ -49,14 +56,21 @@ public class Point {
 
 		// lambda0 is the reference meridian of the projection
 		// we use the first point's longitude as lambda0
-		if(Double.isNaN(lambda0)) {
-			lambda0 = longitude * PI/180;
-			
-			// Note: another approach would be to use an explicit UTM zone, and
-			// then deduce lambda0 as the zone's "middle meridian":
-			// lambda0 = ((UTM_ZONE - 1) * 6 -180 + 3) * PI/180;
+		if (lambdaNeedsSetting) {
+			if (lock.tryLock()) {
+				try {
+					if (lambdaNeedsSetting) {
+						lambda0 = longitude * PI/180;
+						lambdaNeedsSetting=false;
+						// Note: another approach would be to use an explicit UTM zone, and
+						// then deduce lambda0 as the zone's "middle meridian":
+						// lambda0 = ((UTM_ZONE - 1) * 6 -180 + 3) * PI/180;
+					}
+				} finally {
+					lock.unlock();
+				}
+			}
 		}
-		
 
 		// project this point
 		// see http://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system

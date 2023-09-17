@@ -13,6 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * Geographic point, specified by its coordinates.
@@ -21,13 +22,14 @@ import lombok.Data;
  *
  */
 @Data
+@ToString(of = {"latitude", "longitude"})
 public class Point {
 
 	private static final int N0_NORTH = 0;			// northern hemisphere
 	private static final int N0_SOUTH = 10000;		// southern hemisphere
 	
 	private static final double k0 = .9996;
-	private static final double a=6378.137;				// Earth's radius
+	public static final double a=6378.137;				// Earth's radius
 	private static final double e=.0818192;
 
 	// We need to use a single "reference meridian" for all points, for the
